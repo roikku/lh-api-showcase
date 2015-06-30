@@ -6,7 +6,7 @@
 	<groupId>lh.api.showcase</groupId>
 	<artifactId>showcase</artifactId>
 	<packaging>war</packaging>
-	<version>1.0</version>
+	<version>1.1-SNAPSHOT</version>
 	<name>Lufthansa Open API Showcase</name>
 
 	<url>http://lh-api-showcase.appspot.com/</url>
