@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<settings>
+<authentication>
+	<api>
+		<key>client_key</key>
+		<secret>client_secret</secret>
+		<callback>http://localhost:8080</callback>
+	</api>
+</authentication>
+</settings>

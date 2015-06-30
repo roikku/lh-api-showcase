@@ -1,0 +1,134 @@
+/*
+ * Copyright 2015 Loic Merckel
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+package lh.api.showcase.client.referencedata.airlines;
+
+import java.util.Set;
+
+import lh.api.showcase.client.BasicAbstractFormResultView;
+import lh.api.showcase.client.Messages;
+import lh.api.showcase.client.UiUtils;
+import lh.api.showcase.shared.AirlineCode;
+
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.MultiWordSuggestOracle;
+import com.google.gwt.user.client.ui.Panel;
+import com.google.gwt.user.client.ui.SuggestBox;
+import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
+import com.vaadin.client.widgets.Grid;
+import com.vaadin.shared.ui.grid.HeightMode;
+
+public class AirlinesView extends BasicAbstractFormResultView<Airline> implements AirlinesPresenter.Display {
+	
+	static class AirlinesGrid extends Grid<Airline> {
+		public AirlinesGrid() {
+			super();
+			setSelectionMode(SelectionMode.SINGLE);
+			this.setWidth("650px");
+			this.setHeightMode(HeightMode.ROW);
+			this.setHeightByRows(8);
+			
+			addColumn(new Column<String, Airline>(Messages.Util.INSTANCE.get().id()) {
+				@Override
+				public String getValue(Airline row) {
+					return row.getId();
+				}
+			}).setWidth(110);
+			addColumn(new Column<String, Airline>(Messages.Util.INSTANCE.get().idIcao()) {
+				@Override
+				public String getValue(Airline row) {
+					return row.getIdIcao();
+				}
+			}).setWidth(110);
+			addColumn(UiUtils.<Airline>getMultiLingualNameColumn(200));
+			addColumn(new Column<String, Airline>(Messages.Util.INSTANCE.get().otherIds()) {
+				@Override
+				public String getValue(Airline row) {
+					StringBuilder sb = new StringBuilder () ;
+					Set<String> acSet = row.getOtherIds() ;
+					long count = 0 ;
+					long size = acSet.size() ;
+					for (String str : acSet) {
+						sb.append(str) ;
+						++count ;
+						if (count < size - 1) {
+							sb.append(", ") ;
+						}
+					}
+					return sb.toString();
+				}
+			}).setWidth(180);
+		}
+	}
+
+	private SuggestBox airlineCodes ;
+	
+	public AirlinesView () {
+		super (Messages.Util.INSTANCE.get().airlines(), new AirlinesGrid ()) ;
+		
+		final MultiWordSuggestOracle airlineCodesList = new MultiWordSuggestOracle();
+		for (AirlineCode cc : AirlineCode.values ()){
+			airlineCodesList.add(cc.toString());
+		}
+		airlineCodes = new SuggestBox(airlineCodesList);
+
+		init () ;
+	}
+	
+	protected Widget getForm () {
+		VerticalPanel panelV = new VerticalPanel () ;
+		panelV.setWidth("100%");
+		((HasHorizontalAlignment) panelV).setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		 
+		Panel panel = new FlowPanel() ;
+		panel.setStyleName("flowPanelMainForm");
+		
+		Panel airlineCodesPanel = new FlowPanel();
+		airlineCodesPanel.setStyleName("flowPanelVerRowForm");
+		airlineCodesPanel.add(UiUtils.setLeftHorizontalAlignment(new Label (Messages.Util.INSTANCE.get().airlineCodeOptional())));
+		airlineCodesPanel.add(UiUtils.setWidth(airlineCodes, 100.0, Unit.PCT));
+		
+		panel.add(airlineCodesPanel);
+
+		Panel goPanel = new FlowPanel();
+		goPanel.setStyleName("flowPanelVerRowForm");
+		goPanel.add (UiUtils.setWidth(goButton, 100.0, Unit.PCT)) ;
+		
+		panel.add(goPanel) ;
+		
+		panelV.add(panel);
+		
+		return panel ;
+	}
+	
+
+	@Override
+	public AirlineCode getAirlineCode() {
+		try {
+			if (airlineCodes.getValue().isEmpty()) {
+				return null ;
+			} else {
+				return AirlineCode.enumValueOf(airlineCodes.getValue().toUpperCase());
+			}
+		} catch (IllegalArgumentException | NullPointerException e) {
+			// invalid input...
+			// ...
+			return null ;
+		}
+	}
+}

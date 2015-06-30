@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE web-app
+    PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+    "http://java.sun.com/dtd/web-app_2_3.dtd">
+
+<web-app>
+
+	<!-- Listener -->
+	<listener>
+	    <listener-class>lh.api.showcase.server.ShowcaseServletContextListener</listener-class>
+	</listener>
+
+
+	<!-- Servlets -->
+	<servlet>
+		<servlet-name>referenceDataService</servlet-name>
+		<servlet-class>lh.api.showcase.server.api.lh.referencedata.ReferenceDataServiceImpl</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>offersService</servlet-name>
+		<servlet-class>lh.api.showcase.server.api.lh.offers.OffersServiceImpl</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>operationsService</servlet-name>
+		<servlet-class>lh.api.showcase.server.api.lh.operations.OperationsServiceImpl</servlet-class>
+	</servlet>
+
+
+  	<!-- Servlet Mappings -->
+	<servlet-mapping>
+		<servlet-name>referenceDataService</servlet-name>
+		<url-pattern>/Showcase/referenceData</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+		<servlet-name>offersService</servlet-name>
+		<url-pattern>/Showcase/offers</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>operationsService</servlet-name>
+		<url-pattern>/Showcase/operations</url-pattern>
+	</servlet-mapping>
+	
+
+	<!-- Default page to serve -->
+	<welcome-file-list>
+		<welcome-file>Showcase.html</welcome-file>
+	</welcome-file-list>
+
+</web-app>
