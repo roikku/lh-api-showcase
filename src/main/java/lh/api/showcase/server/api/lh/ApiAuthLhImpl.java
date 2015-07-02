@@ -49,6 +49,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
+import java.util.concurrent.Semaphore;
 import java.util.logging.Logger;
 
 import org.json.JSONException;
@@ -70,6 +71,10 @@ public class ApiAuthLhImpl implements ApiAuth {
     
     private final HasProxySettings proxySetting ;
     private final HttpClientFactory httpClientFactory ;
+    
+    private final Semaphore semaphore = new Semaphore(1);
+    private final Object lock = new Object ();
+    private boolean tokensOK = false;
 
     
     public ApiAuthLhImpl(HasConfiguration config) throws IOException, JSONException {
@@ -100,46 +105,62 @@ public class ApiAuthLhImpl implements ApiAuth {
     }
     
     @Override
-    public synchronized String getAccessToken() {
-        return accessToken;
+    public String getAccessToken() {
+    	synchronized(lock) {
+    		return accessToken;
+    	}
     }
 
     @Override
-    public synchronized String getAuthHeader() {
-        return "Bearer" + " " + accessToken;
+    public String getAuthHeader() {
+    	synchronized(lock) {
+    		return "Bearer" + " " + accessToken;
+    	}
     }
 
     @Override
-    public synchronized boolean updateAccessToken() throws UnsupportedEncodingException, JSONException, IOException {
+    public boolean updateAccessToken() throws UnsupportedEncodingException, JSONException, IOException {
  
-        logger.info("Updating/getting access token");
-        CloseableHttpClient httpclient = httpClientFactory.getHttpClient(proxySetting) ;
-        HttpPost httpPost = new HttpPost("https://api.lufthansa.com/v1/oauth/token");
-        List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-        nvps.add(new BasicNameValuePair("client_id", clientId));
-        nvps.add(new BasicNameValuePair("client_secret", clientSecret));
-        nvps.add(new BasicNameValuePair("grant_type", "client_credentials"));
-        BufferedHttpEntity postentity = new BufferedHttpEntity(new UrlEncodedFormEntity(nvps));
-        httpPost.setEntity(postentity);
-        CloseableHttpResponse response = httpclient.execute(httpPost);
-        BufferedHttpEntity entity = new BufferedHttpEntity(response.getEntity());
-        EntityUtils.consume(response.getEntity());
-        boolean tokensOK = false;
-        try {
-            if (response.getStatusLine().getStatusCode() == 200 && entity != null) {
-                String retSrc = EntityUtils.toString(entity);
-                JSONObject result = new JSONObject(retSrc);
-                accessToken = result.getString("access_token");
-                tokenType = result.getString("token_type");
-                tokensOK = true;
-            }
-        } finally {
-            response.close();
-        }
-        if (!tokensOK) {
-            accessToken = "";
-            tokenType = "";
-        }
-        return tokensOK;
+    	if (!semaphore.tryAcquire()) {
+    		semaphore.acquireUninterruptibly();
+    		semaphore.release();
+    		return tokensOK ;
+    	}
+    	synchronized(lock) {
+	        logger.info("Updating/getting access token");
+	        CloseableHttpClient httpclient = httpClientFactory.getHttpClient(proxySetting) ;
+	        HttpPost httpPost = new HttpPost("https://api.lufthansa.com/v1/oauth/token");
+	        List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+	        nvps.add(new BasicNameValuePair("client_id", clientId));
+	        nvps.add(new BasicNameValuePair("client_secret", clientSecret));
+	        nvps.add(new BasicNameValuePair("grant_type", "client_credentials"));
+	        CloseableHttpResponse response = null ;
+	        tokensOK = false;
+	        try {
+		        BufferedHttpEntity postentity = new BufferedHttpEntity(new UrlEncodedFormEntity(nvps));
+		        httpPost.setEntity(postentity);
+		        response = httpclient.execute(httpPost);
+		        BufferedHttpEntity entity = new BufferedHttpEntity(response.getEntity());
+		        EntityUtils.consume(response.getEntity());
+		        
+	            if (response.getStatusLine().getStatusCode() == 200 && entity != null) {
+	                String retSrc = EntityUtils.toString(entity);
+	                JSONObject result = new JSONObject(retSrc);
+	                accessToken = result.getString("access_token");
+	                tokenType = result.getString("token_type");
+	                tokensOK = true;
+	            }
+	        } finally {
+	        	if (response != null) {
+	        		response.close();
+	        	}
+	            semaphore.release();
+	        }
+	        if (!tokensOK) {
+	            accessToken = "";
+	            tokenType = "";
+	        }
+	        return tokensOK;
+    	}
     }
 }
