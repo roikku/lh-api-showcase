@@ -9,7 +9,7 @@ This app is online at [lh-api-showcase.appspot.com](http://lh-api-showcase.appsp
 
 ##Some Technical Aspects
 
-This app is written in Java and is developped using the [GWT](http://www.gwtproject.org) framewrok. It reposes on the MVP architecture (Model--View--Presenter) as described in the article [Building MVP apps](http://www.gwtproject.org/articles/mvp-architecture.html).
+This app is written in Java and is developped using the [GWT](http://www.gwtproject.org) framework. It reposes on the MVP architecture (Model--View--Presenter) as described in the article [Building MVP apps](http://www.gwtproject.org/articles/mvp-architecture.html).
 
 This sample project provides:
 - sample code to use the [LH API](https://developer.lufthansa.com) in Java.
