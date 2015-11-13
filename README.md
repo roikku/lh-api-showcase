@@ -1,4 +1,4 @@
-Lufthansa Open API Showcase  [![Build Status](https://buildhive.cloudbees.com/job/roikku/job/lh-api-showcase/badge/icon)](https://buildhive.cloudbees.com/job/roikku/job/lh-api-showcase/)
+Lufthansa Open API Showcase  [![Build Status](https://roikku.ci.cloudbees.com/buildStatus/icon?job=lh-api-showcase)](https://roikku.ci.cloudbees.com/job/lh-api-showcase/)
 =================
 
 This simple web app provides a showcase for the [Lufthansa Open API](https://developer.lufthansa.com). The API and data are used in conformance with the [license](https://developer.lufthansa.com/General_Terms_and_Conditions).
